@@ -63,6 +63,7 @@ python -m sgod_stock.cli report --tweets data/x/aleabitoreddit.jsonl --article d
 
 ## 文档
 
+- `docs/serenity_bottleneck_theory.md`：结合 1000 条 Serenity 贴文沉淀的 v2 选股理论。
 - `docs/framework.md`：理论框架。
 - `docs/manual.md`：任意新产业爆发时的人工 SOP。
 - `docs/data_access.md`：数据源和登录态抓取说明。
