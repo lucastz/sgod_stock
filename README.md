@@ -75,6 +75,7 @@ python -m sgod_stock.cli report --tweets data/x/aleabitoreddit.jsonl --article d
 
 - 源码目录：`skills/serenity-bottleneck-picker`
 - 本机安装目录：`C:\Users\tiaze\.codex\skills\serenity-bottleneck-picker`
+- 支持能力：单只股票瓶颈审计、主题到多层上游瓶颈发现、证据桥、硬门槛、涨幅惩罚、A 股拥挤度检查和可证伪触发器。
 
 用户已同时安装开源对照 skill：
 

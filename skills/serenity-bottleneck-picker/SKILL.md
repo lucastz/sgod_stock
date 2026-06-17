@@ -13,6 +13,40 @@ Use this skill to analyze a stock, theme, sector, or new industrial boom with th
 
 Core rule: do not start from tickers. Start from demand/cost shock, architecture change, and physical constraints.
 
+## Operating Modes
+
+Use one of two modes based on the user request.
+
+### Mode A — Single-stock bottleneck audit
+
+Use when the user gives a ticker or company.
+
+Goal: determine whether this company is a true bottleneck, chokepoint, bridge asset, weak thematic exposure, or fake linkage.
+
+Required work:
+- Identify the company's actual products, revenue lines, customers, capacity, balance sheet, and recent price move from public sources.
+- Map the company's product into the full upstream/downstream chain.
+- Find the demand or cost shock that would make this company matter now.
+- Check whether the company controls a scarce node or merely participates in a hot theme.
+- Score it with the scorecard and hard gates.
+- Output a verdict with falsification triggers.
+
+### Mode B — Theme-to-bottleneck discovery
+
+Use when the user gives a theme, for example optical interconnect, CPO, AI power, HBM, humanoids, glass substrate, liquid cooling, or sovereign AI.
+
+Goal: discover the real bottleneck layer and public proxies by reasoning upstream multiple layers.
+
+Required work:
+- Start from the demand/cost shock.
+- Identify the architecture shift.
+- Build a minimum 4-layer chain: end demand → system/module → component → material/foundry/test/equipment → public proxy.
+- Compare candidate bottleneck layers and pick the tightest physical constraint.
+- Find public companies that most cleanly express that constraint.
+- Score the best candidates and state missing evidence.
+
+For detailed source collection and chain-inference rules, load `references/research-protocol.md`.
+
 ## Workflow
 
 1. **Define the shock**
@@ -67,6 +101,18 @@ Core rule: do not start from tickers. Start from demand/cost shock, architecture
     - Falsification must be dated, binary, and checkable.
     - Include the threshold and the action it forces.
 
+## Autonomous Research Contract
+
+When current company facts, prices, filings, customer evidence, market caps, ownership, or A-share trading conditions matter, use public sources or available local data before scoring. Do not invent missing data.
+
+Minimum source set for a scored answer:
+- Company primary source: annual report, 10-K/20-F, investor presentation, prospectus, exchange filing, or official announcement.
+- Product/technical source: datasheet, white paper, standards body, customer product page, teardown, or credible technical article.
+- Market/price source: public quote source for recent gain and market cap, or mark unknown.
+- Evidence source: customer qualification, order, backlog, revenue ramp, capacity expansion, government funding, patent, hiring, or supplier list.
+
+If fewer than two independent evidence types are found, output Watchlist/Lottery only and cap confidence at medium.
+
 ## Output Template
 
 ```text
@@ -85,6 +131,8 @@ Core rule: do not start from tickers. Start from demand/cost shock, architecture
 13. Falsification triggers
 14. Verdict: Core / Alpha / Watchlist / Lottery / Winner Tracking / Avoid
 ```
+
+For stricter templates, load `references/output-templates.md`.
 
 ## Guardrails
 
