@@ -553,7 +553,9 @@ def main():
             if len(seen) >= args.limit:
                 break
             if not cursor:
-                raise RuntimeError("SearchTimeline response did not include bottom cursor")
+                # 搜索窗口没有 bottom cursor 代表当前日期窗口已经抓到底；换更早窗口继续。
+                print("window_exhausted", args.raw_query, "total", len(seen), flush=True)
+                break
             time.sleep(args.delay_seconds)
 
 
