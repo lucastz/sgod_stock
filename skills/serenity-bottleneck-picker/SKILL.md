@@ -42,8 +42,9 @@ Required work:
 - Identify the architecture shift.
 - Build a minimum 4-layer chain: end demand → system/module → component → material/foundry/test/equipment → public proxy.
 - Compare candidate bottleneck layers and pick the tightest physical constraint.
-- Find public companies that most cleanly express that constraint.
-- Score the best candidates and state missing evidence.
+- Respect the user's market scope: global by default; if the user says A-share, Hong Kong, US, Japan, Korea, Taiwan, Europe, ADR, or another market, only recommend executable stocks in that scope.
+- Find public companies that most cleanly express that constraint inside the requested market scope.
+- Always output a ranked stock list with scores, evidence, missing evidence, and hard-gate notes. If no adequate stock exists in the requested market, say so and explain the nearest alternatives.
 
 For detailed source collection and chain-inference rules, load `references/research-protocol.md`.
 
@@ -72,6 +73,7 @@ For detailed source collection and chain-inference rules, load `references/resea
    - Prefer pure-play small/mid-cap bottleneck owners.
    - Then old-label mismatch suppliers, upstream material/equipment names, foundry/platform enablers, large-cap compounders, or baskets.
    - Reject fake AI linkage, tiny revenue exposure, serial dilution, impossible trading access, or easily bypassed nodes.
+   - Default search universe is global public equities. If the user limits the market, filter candidates before ranking.
 
 6. **Build the evidence bridge**
    - Grade evidence: confirmed / strong / rumor.
@@ -113,6 +115,17 @@ Minimum source set for a scored answer:
 
 If fewer than two independent evidence types are found, output Watchlist/Lottery only and cap confidence at medium.
 
+For theme discovery, a scored answer must include stock candidates unless the requested market has no credible public proxy. Each candidate row must include:
+- ticker / company / exchange
+- bottleneck node
+- why it is the cleanest proxy
+- evidence grade
+- missing evidence
+- hard-gate status
+- Industrial Bottleneck Score
+- Current Entry Score
+- verdict
+
 ## Output Template
 
 ```text
@@ -122,14 +135,15 @@ If fewer than two independent evidence types are found, output Watchlist/Lottery
 4. Bottleneck map
 5. Bottleneck vs chokepoint vs bridge asset
 6. Public proxies
-7. Evidence bridge
-8. Hard gates
-9. Industrial Bottleneck Score
-10. Current Entry Score
-11. A-share / crowding dashboard if relevant
-12. Catalysts
-13. Falsification triggers
-14. Verdict: Core / Alpha / Watchlist / Lottery / Winner Tracking / Avoid
+7. Ranked stock candidates with market-scope compliance
+8. Evidence bridge
+9. Hard gates
+10. Industrial Bottleneck Score
+11. Current Entry Score
+12. A-share / crowding dashboard if relevant
+13. Catalysts
+14. Falsification triggers
+15. Verdict: Core / Alpha / Watchlist / Lottery / Winner Tracking / Avoid
 ```
 
 For stricter templates, load `references/output-templates.md`.

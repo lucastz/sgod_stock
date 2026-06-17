@@ -69,6 +69,7 @@ End demand
 ```text
 1. Theme
 - Theme:
+- Requested market scope: global / A-share / Hong Kong / US / other
 - Demand/cost shock:
 - Why now:
 
@@ -95,7 +96,12 @@ End demand
 - Bottleneck of the bottleneck:
 
 6. Public Proxy Ranking
-| Company | Exchange | Node | Purity | Evidence | Risks | Score |
+| Rank | Ticker | Company | Exchange | Market scope | Node | Why this proxy | Evidence grade | Industrial Score | Entry Score | Verdict |
+
+If requested market has no credible candidate:
+- Scoped result:
+- Why no candidate passed:
+- Closest global alternatives:
 
 7. Best Chain Thesis
 Demand shock
@@ -106,9 +112,20 @@ Demand shock
 → clean public proxy
 → mispricing label
 
-8. Evidence Gaps
+8. Candidate Details
+For each ranked stock:
+- Products:
+- Customers/evidence:
+- Revenue/purity:
+- Capacity/expansion:
+- Hard gates:
+- Recent gain/crowding:
+- Missing evidence:
+- Falsification:
+
+9. Evidence Gaps
 - What must be verified before conviction:
 
-9. Falsification Triggers
+10. Falsification Triggers
 - What would prove the chain wrong:
 ```

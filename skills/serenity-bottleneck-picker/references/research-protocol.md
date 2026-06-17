@@ -64,6 +64,14 @@ Then apply recent-gain penalty and crowding checks.
 
 Use this when the user gives a theme or new industry.
 
+Default market scope is global public equities. If the user specifies a market, filter the universe before recommending stocks:
+
+- A-share: Shanghai, Shenzhen, Beijing Stock Exchange, STAR, ChiNext if accessible.
+- Hong Kong: HKEX ordinary shares and liquid H-shares/red chips.
+- US: NYSE, Nasdaq, AMEX, liquid ADRs if relevant.
+- Japan/Korea/Taiwan/Europe: local listings and liquid ADRs/GDRs when applicable.
+- If the requested market has no credible public proxy, say "no adequate proxy found in this market" and list the closest global proxies separately.
+
 ### Step 1: Demand/Cost Shock
 
 Define the shock:
@@ -119,6 +127,28 @@ For each high-scoring layer, find public companies globally:
 - US, Europe, Japan, Korea, Taiwan, Hong Kong, A-share, OTC/ADR if executable.
 - Prefer pure-play small/mid-cap proxies.
 - Use large caps mostly as evidence unless the exposure is material.
+- If the user limits the market, do not rank out-of-scope stocks in the main recommendation table.
+- If no scoped candidates pass evidence checks, output an empty scoped ranking and a separate "global alternatives" section.
+
+### Step 5.5: Candidate Scoring
+
+Every theme analysis should rank candidate stocks, not just describe the chain.
+
+For each candidate, collect or mark unknown:
+
+- ticker, company, exchange, market scope.
+- exact bottleneck node.
+- public proxy purity.
+- evidence stage and source quality.
+- financing_dependence, counterparty_quality, execution_accessibility.
+- recent gain and crowding status if current data is available.
+- key missing evidence.
+
+Then score:
+
+- Industrial Bottleneck Score: structural quality of the bottleneck exposure.
+- Current Entry Score: industrial score after recent-gain, crowding, dilution, financial, evidence-gap, technical-substitution, and hard-gate effects.
+- Verdict: Core / Alpha / Watchlist / Lottery / Winner Tracking / Avoid.
 
 ### Step 6: Chain Thesis
 
@@ -145,6 +175,15 @@ Example shape:
 ```
 
 The example is a reasoning shape, not proof. Replace every arrow with sourced evidence before scoring.
+
+### Step 7: Required Recommendation Table
+
+Always include a table like:
+
+| Rank | Ticker | Company | Exchange | Market scope | Bottleneck node | Why this proxy | Evidence grade | Industrial Score | Entry Score | Verdict |
+|---:|---|---|---|---|---|---|---|---:|---:|---|
+
+If a score depends on unknown current market data, show a score range and list the unknowns.
 
 ## Source Priority
 
