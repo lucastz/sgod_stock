@@ -64,9 +64,23 @@ python -m sgod_stock.cli report --tweets data/x/aleabitoreddit.jsonl --article d
 ## 文档
 
 - `docs/serenity_bottleneck_theory.md`：结合 1000 条 Serenity 贴文沉淀的 v2 选股理论。
+- `docs/skill_comparison.md`：对比开源 `investment-os` skill 和本项目 `serenity-bottleneck-picker` skill。
 - `docs/framework.md`：理论框架。
 - `docs/manual.md`：任意新产业爆发时的人工 SOP。
 - `docs/data_access.md`：数据源和登录态抓取说明。
+
+## Codex Skill
+
+本项目同时生成了可复用 skill：
+
+- 源码目录：`skills/serenity-bottleneck-picker`
+- 本机安装目录：`C:\Users\tiaze\.codex\skills\serenity-bottleneck-picker`
+
+用户已同时安装开源对照 skill：
+
+- `C:\Users\tiaze\.codex\skills\investment-os`
+
+安装或更新 skill 后，需要重启 Codex 才会进入下一轮自动发现。
 
 ## 注意
 

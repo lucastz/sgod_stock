@@ -20,32 +20,57 @@ class CandidateScoreInput:
     """
 
     candidate: CandidateCompany
+    demand_certainty: float
+    cost_shock: float
+    failure_cost_jump: float
+    mandatory_adoption: float
     bottleneck_strength: float
     evidence_strength: float
     pure_play: float
     expansion_difficulty: float
     customer_validation: float
+    old_label_mismatch: float
     market_attention_gap: float
     timing_score: float
     crowding_risk: float
+    a_share_crowding_risk: float
     dilution_risk: float
     financial_risk: float
+    technical_substitution_risk: float
+    evidence_gap_risk: float
+    financing_dependence: str
+    counterparty_quality: str
+    execution_accessibility: str
 
 
 POSITIVE_WEIGHTS = {
-    "bottleneck_strength": 20.0,
-    "evidence_strength": 18.0,
-    "pure_play": 14.0,
-    "expansion_difficulty": 14.0,
-    "customer_validation": 14.0,
-    "market_attention_gap": 10.0,
-    "timing_score": 12.0,
+    "demand_certainty": 12.0,
+    "cost_shock": 6.0,
+    "failure_cost_jump": 8.0,
+    "mandatory_adoption": 8.0,
+    "bottleneck_strength": 16.0,
+    "evidence_strength": 12.0,
+    "pure_play": 8.0,
+    "expansion_difficulty": 8.0,
+    "customer_validation": 8.0,
+    "old_label_mismatch": 5.0,
+    "market_attention_gap": 5.0,
+    "timing_score": 4.0,
 }
 
 PENALTY_WEIGHTS = {
     "crowding_risk": 10.0,
+    "a_share_crowding_risk": 10.0,
     "dilution_risk": 8.0,
     "financial_risk": 8.0,
+    "technical_substitution_risk": 10.0,
+    "evidence_gap_risk": 10.0,
+}
+
+HARD_GATE_ALLOWED_VALUES = {
+    "financing_dependence": ("LOW", "MED", "HIGH"),
+    "counterparty_quality": ("LOW", "MED", "HIGH"),
+    "execution_accessibility": ("ACCESSIBLE", "LIMITED", "INACCESSIBLE"),
 }
 
 
@@ -63,7 +88,8 @@ def recent_gain_penalty(recent_gain_pct: Optional[float]) -> float:
     """计算近期涨幅惩罚。
 
     MarsCarsChipDip 文章的关键启发是：真瓶颈也可能因为涨幅过大而失去入场优势。
-    文章强调 `> 800%` 已进入“只跟踪”区间，因此这里用分段表而不是平滑曲线。
+    用户要求 300% 以上只触发中等惩罚，500% 以上才进入重罚；`> 800%` 仍按
+    “只跟踪不挖掘”处理。
     """
 
     if recent_gain_pct is None:
@@ -73,10 +99,51 @@ def recent_gain_penalty(recent_gain_pct: Optional[float]) -> float:
     if recent_gain_pct <= 300:
         return (recent_gain_pct - 100) / 200 * 12.0
     if recent_gain_pct <= 500:
-        return 24.0
+        return 20.0
     if recent_gain_pct <= 800:
         return 40.0
     return 70.0
+
+
+def _normalize_hard_gate(name: str, value: str) -> str:
+    """校验硬门槛字段。
+
+    硬门槛是研究结论的前置约束，不用模糊文本兜底；CSV 必须填写允许值。
+    """
+
+    normalized = value.strip().upper()
+    allowed = HARD_GATE_ALLOWED_VALUES[name]
+    if normalized not in allowed:
+        raise ValueError(f"{name} must be one of {allowed}, got {value}")
+    return normalized
+
+
+def _hard_gate_score_cap(item: CandidateScoreInput, review_flags: List[str]) -> Optional[float]:
+    """应用融资、交易对手和可交易性硬门槛。
+
+    返回 None 表示不封顶；返回数字表示最终总分不能超过该上限。不可交易标的直接归零。
+    """
+
+    financing = _normalize_hard_gate("financing_dependence", item.financing_dependence)
+    counterparty = _normalize_hard_gate("counterparty_quality", item.counterparty_quality)
+    accessibility = _normalize_hard_gate("execution_accessibility", item.execution_accessibility)
+
+    caps = []  # type: List[float]
+    if financing == "HIGH":
+        caps.append(35.0)
+        review_flags.append("融资依赖 HIGH：即使产业逻辑强，也封顶为 Lottery/观察级别")
+    if counterparty == "LOW":
+        caps.append(50.0)
+        review_flags.append("交易对手或 backlog 质量 LOW：合同/订单可靠性不足，分数封顶")
+    if accessibility == "LIMITED":
+        caps.append(60.0)
+        review_flags.append("交易可达性 LIMITED：流动性、账户权限或市场准入限制仓位")
+    if accessibility == "INACCESSIBLE":
+        review_flags.append("交易可达性 INACCESSIBLE：当前账户无法执行，候选分数归零")
+        return 0.0
+    if not caps:
+        return None
+    return min(caps)
 
 
 def score_candidate(item: CandidateScoreInput) -> ScoredCandidate:
@@ -87,16 +154,24 @@ def score_candidate(item: CandidateScoreInput) -> ScoredCandidate:
     """
 
     numeric_fields = {
+        "demand_certainty": item.demand_certainty,
+        "cost_shock": item.cost_shock,
+        "failure_cost_jump": item.failure_cost_jump,
+        "mandatory_adoption": item.mandatory_adoption,
         "bottleneck_strength": item.bottleneck_strength,
         "evidence_strength": item.evidence_strength,
         "pure_play": item.pure_play,
         "expansion_difficulty": item.expansion_difficulty,
         "customer_validation": item.customer_validation,
+        "old_label_mismatch": item.old_label_mismatch,
         "market_attention_gap": item.market_attention_gap,
         "timing_score": item.timing_score,
         "crowding_risk": item.crowding_risk,
+        "a_share_crowding_risk": item.a_share_crowding_risk,
         "dilution_risk": item.dilution_risk,
         "financial_risk": item.financial_risk,
+        "technical_substitution_risk": item.technical_substitution_risk,
+        "evidence_gap_risk": item.evidence_gap_risk,
     }
     for name, value in numeric_fields.items():
         _validate_zero_to_five(name, value)
@@ -115,21 +190,33 @@ def score_candidate(item: CandidateScoreInput) -> ScoredCandidate:
         review_flags.append("缺少近期涨幅数据，无法判断是否已经过度拥挤")
     elif item.candidate.recent_gain_pct > 800:
         review_flags.append("近期涨幅超过 800%，按文章纪律只跟踪不挖掘")
+    elif item.candidate.recent_gain_pct > 500:
+        review_flags.append("近期涨幅超过 500%，进入重罚区，需要等待新证据或回撤")
     elif item.candidate.recent_gain_pct > 300:
-        review_flags.append("近期涨幅超过 300%，需要优先复核入场性价比")
+        review_flags.append("近期涨幅超过 300%，触发中等涨幅惩罚")
     if item.crowding_risk >= 4:
         review_flags.append("拥挤度风险高，必须检查是否已经成为市场共识交易")
+    if item.a_share_crowding_risk >= 4:
+        review_flags.append("A 股拥挤度风险高，必须检查换手率、龙虎榜和公司风险提示")
     if item.dilution_risk >= 4:
         review_flags.append("稀释风险高，必须检查 ATM/增发/可转债")
     if item.financial_risk >= 4:
         review_flags.append("财务风险高，必须检查现金流、债务和持续经营风险")
+    if item.technical_substitution_risk >= 4:
+        review_flags.append("技术替代风险高，必须验证路线是否可能被绕开")
+    if item.evidence_gap_risk >= 4:
+        review_flags.append("证据断裂风险高，必须补齐 S/A 级证据")
     if not item.candidate.evidence_links:
         review_flags.append("缺少证据链接，不能作为正式候选结论")
 
     total_score = max(0.0, positive_score - penalty_score)
+    score_cap = _hard_gate_score_cap(item, review_flags)
+    if score_cap is not None:
+        total_score = min(total_score, score_cap)
     fields = {
         **numeric_fields,
         "recent_gain_penalty": gain_penalty,
+        "score_cap": score_cap if score_cap is not None else -1.0,
     }
     return ScoredCandidate(
         candidate=item.candidate,
@@ -158,16 +245,27 @@ def load_candidates_csv(path: Path) -> List[CandidateScoreInput]:
         "demand_shock",
         "bottleneck_evidence",
         "evidence_links",
+        "demand_certainty",
+        "cost_shock",
+        "failure_cost_jump",
+        "mandatory_adoption",
         "bottleneck_strength",
         "evidence_strength",
         "pure_play",
         "expansion_difficulty",
         "customer_validation",
+        "old_label_mismatch",
         "market_attention_gap",
         "timing_score",
         "crowding_risk",
+        "a_share_crowding_risk",
         "dilution_risk",
         "financial_risk",
+        "technical_substitution_risk",
+        "evidence_gap_risk",
+        "financing_dependence",
+        "counterparty_quality",
+        "execution_accessibility",
     }
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -218,14 +316,25 @@ def _row_to_score_input(row: Dict[str, str]) -> CandidateScoreInput:
     )
     return CandidateScoreInput(
         candidate=candidate,
+        demand_certainty=_required_float(row, "demand_certainty"),
+        cost_shock=_required_float(row, "cost_shock"),
+        failure_cost_jump=_required_float(row, "failure_cost_jump"),
+        mandatory_adoption=_required_float(row, "mandatory_adoption"),
         bottleneck_strength=_required_float(row, "bottleneck_strength"),
         evidence_strength=_required_float(row, "evidence_strength"),
         pure_play=_required_float(row, "pure_play"),
         expansion_difficulty=_required_float(row, "expansion_difficulty"),
         customer_validation=_required_float(row, "customer_validation"),
+        old_label_mismatch=_required_float(row, "old_label_mismatch"),
         market_attention_gap=_required_float(row, "market_attention_gap"),
         timing_score=_required_float(row, "timing_score"),
         crowding_risk=_required_float(row, "crowding_risk"),
+        a_share_crowding_risk=_required_float(row, "a_share_crowding_risk"),
         dilution_risk=_required_float(row, "dilution_risk"),
         financial_risk=_required_float(row, "financial_risk"),
+        technical_substitution_risk=_required_float(row, "technical_substitution_risk"),
+        evidence_gap_risk=_required_float(row, "evidence_gap_risk"),
+        financing_dependence=row["financing_dependence"].strip(),
+        counterparty_quality=row["counterparty_quality"].strip(),
+        execution_accessibility=row["execution_accessibility"].strip(),
     )

@@ -65,8 +65,9 @@
 
 按 `examples/candidates.schema.csv` 填写：
 
-- 0-5 分正向项：瓶颈强度、证据强度、主营纯度、扩产难度、客户验证、市场未定价、时机。
-- 0-5 分风险项：拥挤度风险、稀释风险、财务风险。
+- 0-5 分正向项：需求确定性、成本冲击、失败成本跃迁、强制采用、瓶颈强度、证据强度、主营纯度、扩产难度、客户验证、旧标签错配、市场未定价、时机。
+- 0-5 分风险项：普通拥挤度、A 股拥挤度、稀释风险、财务风险、技术替代风险、证据断裂风险。
+- 硬门槛项：`financing_dependence` 填 LOW/MED/HIGH；`counterparty_quality` 填 LOW/MED/HIGH；`execution_accessibility` 填 ACCESSIBLE/LIMITED/INACCESSIBLE。
 - 市场项：近期涨幅、市值。
 - 来源项：证据链接用 `|` 分隔。
 
